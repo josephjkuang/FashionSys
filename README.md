@@ -22,7 +22,7 @@
 
 Fashion, a thriving global industry worth billions of dollars, intricately influences our daily lives by serving as a means of self-expression and societal interaction. However, despite substantial progress in machine learning (ML), automated outfit recommendations remain challenging due to the intricate blend of human creativity, style knowledge, and individual expression necessary to transform disparate clothing pieces into a unified ensemble. Some existing tools and systems have attempted to tackle this problem; however, they necessitate users to meticulously document their entire wardrobe, impeding user experience due to the time-consuming nature of this task. In this paper, we introduce FashionSys, an end-to-end personalized fashion recommendation system utilizing computer vision models to infer user style and generate outfit recommendations. Our system is designed for consumers who start outfit creation with a single focal piece of clothing. By offering real-time recommendations that construct an outfit around this item, our lightweight system eliminates the need for users to digitize their entire wardrobe, enhancing the user experience.
 
-[Full Survey Report](https://github.com/josephjkuang/FashionSys/docs/Survey.pdf) </br>
+[Full Survey Report](https://github.com/josephjkuang/FashionSys/blob/main/docs/Survey.pdf) </br>
 
 ## Repository Breakdown
 
