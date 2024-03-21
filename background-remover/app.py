@@ -18,8 +18,8 @@ def remove_background(image_path):
         print(f"Error removing background: {e}")
         return None  # Return None in case of errors
     
-input_path = "../test_images"
-output_path = "../no_background_images"
+input_path = "../data/test_images"
+output_path = "../data/no_background_images"
 
 # Loads in files and does whole process of removing background and saving image.
 def remove_and_save(filename):

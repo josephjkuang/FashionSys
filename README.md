@@ -26,7 +26,15 @@ Fashion, a thriving global industry worth billions of dollars, intricately influ
 
 ## Repository Breakdown
 
-- TODO
+- **data**
+  - **test_images**: Directory of original clothing images
+  - **no_background_images**: Directory of clothing images with background removed
+- **background-remover**: Directory to remove background
+- **clothing-classifier**: Directory to classify clothing apparel
+  - **model**: Directory containing the clothing classifier model
+  - **Classifier.ipynb**: IPython notebook for classifying images
+
+
 
 ## Technologies
 
@@ -34,4 +42,8 @@ Fashion, a thriving global industry worth billions of dollars, intricately influ
 
 ## Running the Project
 
+- TODO
+
+## Requirements
+ 
 - TODO
