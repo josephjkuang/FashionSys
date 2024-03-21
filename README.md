@@ -29,12 +29,10 @@ Fashion, a thriving global industry worth billions of dollars, intricately influ
 - **data**
   - **test_images**: Directory of original clothing images
   - **no_background_images**: Directory of clothing images with background removed
-- **background-remover**: Directory to remove background
+- **background-remover**: Directory to remove background around clothes
 - **clothing-classifier**: Directory to classify clothing apparel
-  - **model**: Directory containing the clothing classifier model
-  - **Classifier.ipynb**: IPython notebook for classifying images
-
-
+- **color-classifier**: Directory to retrieve color palette of clothing
+- **pattern-classifier**: Directory to classify patterns on clothing
 
 ## Technologies
 
