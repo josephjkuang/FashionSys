@@ -33,6 +33,7 @@ Fashion, a thriving global industry worth billions of dollars, intricately influ
 - **clothing-classifier**: Directory to classify clothing apparel
 - **color-classifier**: Directory to retrieve color palette of clothing
 - **pattern-classifier**: Directory to classify patterns on clothing
+- **pattern-predictory**: Directory to make API request to get weather predictions
 
 ## Technologies
 
