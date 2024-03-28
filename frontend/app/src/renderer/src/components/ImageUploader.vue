@@ -1,7 +1,7 @@
 <template>
   <v-col cols="4">
     <v-card>
-      <v-card-title>Image Upload Preview</v-card-title>
+      <v-card-title> Image of a clothing item (e.g. T-shirt) </v-card-title>
       <v-card-text>
         <v-file-input
           label="Upload Image"

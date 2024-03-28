@@ -5,6 +5,7 @@ export const useImageStore = defineStore('image', {
     imageBlob: null,
     imageUrl: '',
     predictedImageUrl: '',
+    predictionInProgress: false 
   }),
   actions: {
     setImageUrl(url) {
@@ -17,6 +18,8 @@ export const useImageStore = defineStore('image', {
       this.predictedImageUrl = url;
     },
     async predictOutfit() {
+      this.predictionInProgress = true;
+
       if (!this.imageUrl) {
         alert("Please upload an image first.");
         return;
@@ -40,6 +43,8 @@ export const useImageStore = defineStore('image', {
         console.error('Error:', error);
         alert('Failed to get prediction.');
       }
+
+      this.predictionInProgress = false;
     }
   },
 });
