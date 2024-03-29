@@ -42,4 +42,5 @@ for i in range(0, len(jpg_files), batch_size):
 
 # Convert embeddings list to numpy array
 embeddings = np.array(embeddings)
-np.save('embeddings.npy', embeddings)
+embedding_path = "embeddings_{}.npy".format(batch)
+np.save(embedding_path, embeddings)
