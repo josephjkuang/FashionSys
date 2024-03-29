@@ -2,3 +2,7 @@ tensorflow
 matplotlib
 scikit-learn
 numpy
+fastapi
+uvicorn
+Pillow
+python-multipart
