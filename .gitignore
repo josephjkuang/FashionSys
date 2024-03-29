@@ -1,1 +1,8 @@
 .DS_Store
+
+*.h5
+*.safetensors
+*.ipynb_checkpoints
+
+polyvore_outfits
+
