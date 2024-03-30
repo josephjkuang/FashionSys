@@ -5,6 +5,7 @@
 *.ipynb_checkpoints
 *.npy
 
+item_model
 polyvore_outfits/images
 polyvore_outfits/embeddings.npy
 polyvore_outfits/item_metadata.json

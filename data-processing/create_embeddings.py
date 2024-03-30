@@ -40,11 +40,11 @@ for batch in batches:
             img_array = image.img_to_array(img)
             batch_images.append(img_array)
 
-        # Make prediction and normalize
-        batch_images = preprocess_input(np.array(batch_images))
-        batch_embeddings = model.predict(batch_images)
-        batch_embeddings /= np.linalg.norm(batch_embeddings, axis=1, keepdims=True)
-        embeddings.extend(batch_embeddings)
+            # Make prediction and normalize
+            batch_images = preprocess_input(np.array(batch_images))
+            batch_embeddings = model.predict(batch_images)
+            batch_embeddings /= np.linalg.norm(batch_embeddings, axis=1, keepdims=True)
+            embeddings.extend(batch_embeddings)
 
     # Convert embeddings list to numpy array
     embeddings = np.array(embeddings)
