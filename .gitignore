@@ -3,7 +3,9 @@
 *.h5
 *.safetensors
 *.ipynb_checkpoints
+*.npy
 
 polyvore_outfits
 sshs.txt
 master_script.sh
+*.npy
