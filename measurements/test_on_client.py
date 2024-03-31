@@ -22,7 +22,7 @@ flatten_embedding = embedding.flatten()
 result_normlized = flatten_embedding / norm(flatten_embedding)  # Normalizing
 
 response = requests.post(
-    'http://localhost:8000/recommendation_only/',
+    'http://172.22.151.173:8000/recommendation_only/',
     json=result_normlized.tolist()  # Ensure this matches the expected format
 )
 
