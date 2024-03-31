@@ -30,7 +30,7 @@ response = requests.post(
 if response.status_code == 200:
     end_time = time.time() 
     duration = end_time - start_time 
-    print(f"Time taken for reading image and calling api: {duration} seconds")
+    # print(f"Time taken for reading image and calling api: {duration} seconds")
 
     print("Recommendations:", response.json())
 else:
