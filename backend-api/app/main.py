@@ -1,7 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware  # Import CORSMiddleware
-import torch
 from torchvision import transforms
 from PIL import Image
 import io
