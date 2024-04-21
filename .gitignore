@@ -13,3 +13,5 @@ polyvore_outfits/item_metadata.json
 polyvore_outfits/outfits_metadata.json
 sshs.txt
 master_script.sh
+
+__pycache__

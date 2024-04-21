@@ -20,9 +20,7 @@
 
 ## Abstract
 
-Fashion, a thriving global industry worth billions of dollars, intricately influences our daily lives by serving as a means of self-expression and societal interaction. However, despite substantial progress in machine learning (ML), automated outfit recommendations remain challenging due to the intricate blend of human creativity, style knowledge, and individual expression necessary to transform disparate clothing pieces into a unified ensemble. Some existing tools and systems have attempted to tackle this problem; however, they necessitate users to meticulously document their entire wardrobe, impeding user experience due to the time-consuming nature of this task. In this paper, we introduce FashionSys, an end-to-end personalized fashion recommendation system utilizing computer vision models to infer user style and generate outfit recommendations. Our system is designed for consumers who start outfit creation with a single focal piece of clothing. By offering real-time recommendations that construct an outfit around this item, our lightweight system eliminates the need for users to digitize their entire wardrobe, enhancing the user experience.
-
-[Full Survey Report](https://github.com/josephjkuang/FashionSys/blob/main/docs/Survey.pdf) </br>
+Privacy concerns in fashion technology have increasingly become a paramount issue, leaving users vulnerable to data leakages due to the oversight of most fashion tools. This paper introduces \name, a novel system designed to tackle these concerns by providing outfit completion within a privacy-oriented framework. \name leverages edge computing principles to process all operations involving identifiable user data, such as personal clothing images and fashion biases, locally. It utilizes an image inferencing tool to extract low-level embeddings at the user-side, eliminating the need to transmit user clothing data to global servers. Furthermore, \name integrates a filtering mechanism based on user preferences at the local level to enhance suggested outfits according to implicit and explicit feedback. Through our experiments, we demonstrate that our system can achieve these goals with less than 100 MB of storage overhead and an improved scalability rate for additional client requests.
 
 ## Repository Breakdown
 
@@ -34,4 +32,9 @@ Fashion, a thriving global industry worth billions of dollars, intricately influ
 
 ## Running the Project
 
-- TODO
+- Download embedding files from https://drive.google.com/drive/folders/1gz4woiYTK0COxMHfgwP9KSsQ9z0zcY_q?usp=sharing
+- Download images from https://www.kaggle.com/datasets/dnepozitek/polyvore-outfits/data
+
+- Run cells in `outfit_generation/client.ipynb`
+- Run cells in `outfit_generation/server.ipynb`
+
