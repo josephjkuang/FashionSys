@@ -93,6 +93,25 @@ class ClientResNet(tf.keras.Model):
             emb = self.add_cluster_based_noise(emb, item_rgb, noise_scale)
 
         return emb
+
+    # Image is already opened
+    def predict_img(self, img, laplace_noise=False, cluster_noise=False, noise_scale=0.35):
+        # Process the image
+        preprocessed_img = self.preprocess_image(img)
+        img.close()
+
+        # Feed through ResNet
+        emb = self.seq0(preprocessed_img)
+
+        # Apply noise
+        if laplace_noise:
+            emb = self.add_laplacian_noise(emb, noise_scale)
+        elif cluster_noise:
+            item_rgb = color_classify.get_color(image_path)
+            emb = self.add_cluster_based_noise(emb, item_rgb, noise_scale)
+
+        return emb
+
     
     # Needed for subclass
     def call(self, inputs):

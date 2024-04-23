@@ -1,13 +1,8 @@
 ### Install dependencies
 
-Install all libraries used via `pip install -r requirements.txt`. If you encounter permission issues, run the command with `sudo`.
+Install all libraries used via `pip3 install -r requirements.txt`. If you encounter permission issues, run the command with `sudo`.
 
 If working on one of the 525 VMs, please execute `sudo yum install python3-devl` and `sudo yum install libjpeg-turbo-devel zlib-devel` first.
-
-Had to upgrade dependencies
-- `pip install --upgrade idna`
-- `pip install --upgrade tensorflow==2.7.0`
-- `pip install --upgrade urllib3`
 
 
 ### Measure latencies

@@ -12,7 +12,6 @@ from app.sample_run import load_model, resnet_and_knn, knn
 from typing import List  
 import io
 
-
 app = FastAPI()
 
 # Configure CORS
@@ -40,12 +39,11 @@ async def predict(file: UploadFile = File(...), content_length: int = Header(...
     image_data = await file.read()
     # clothes image uploaded by the user
     image = Image.open(io.BytesIO(image_data)).convert('RGB')
+    image = image.resize((224, 224))
+    print("image loading finish", time.time())
     
     # TODO: outfit recommendation, return descriptions
     # feel free to ignore this part for now. we are probably more interested in end-to-end
-    print("image loading finish", time.time())
-
-    image = image.resize((224, 224))
     result = resnet_and_knn(image)
 
     return JSONResponse(content=result)
@@ -57,10 +55,9 @@ async def recommendation_only(embedding: List[float] = Body(...), content_length
         # TODO: outfit recommendation, return descriptions
         process_start = time.time()
         result = knn(embedding)
-        
         process_end = time.time()
-        # print(process_start, process_end)
 
+        # print(process_start, process_end)
         return JSONResponse(content={"result": result})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
