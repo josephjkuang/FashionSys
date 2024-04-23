@@ -2,9 +2,11 @@ import json
 import logging
 import numpy as np
 import os
+import base64
 
 from sklearn.neighbors import NearestNeighbors
 from utils.ServerResNet import ServerResnet
+from utils.ClientResNet import ClientResNet
 
 # Data paths
 data_dir = "../polyvore_outfits/"
@@ -46,14 +48,12 @@ neighbors = NearestNeighbors(n_neighbors=6, algorithm='brute', metric='euclidean
 
 # Seperated Models ResNet
 ClientModel = ClientResNet()
-ServerModel = None
+ServerModel = ServerResnet()
 
 in_path = "../polyvore_outfits/images/"
 
 # Loading in initial model for 
 def load_model():
-    ServerModel = ServerResnet()
-
     # Fit the nearest neighbors
     neighbors.fit(embeddings)
     print("Loaded in embeddings for nearest neighbors")
@@ -62,7 +62,7 @@ def load_model():
 def resnet_and_knn(img):
     client_embeddings = ClientModel.predict(img, True, False)
     server_embeddings = ServerModel.call(client_embeddings)
-    distance, indices = neighbors.kneighbors([ServerModel])
+    distance, indices = neighbors.kneighbors([server_embeddings])
 
     result = []
 
@@ -78,15 +78,29 @@ def resnet_and_knn(img):
 
 # Server only
 def knn(embedding):
-    server_embeddings = ServerModel.call(client_embeddings)
-    distance, indices = neighbors.kneighbors([embedding])
+    embedding = np.array(embedding)
+    print(embedding.shape)
+    # client_embeddings = embedding.reshape((1, 28, 28, 512))
+    server_embeddings = ServerModel.call(embedding)
+    distance, indices = neighbors.kneighbors([server_embeddings])
 
-    result = []
+    images = []
+    descriptions = [] 
     for file_idx in indices[0][1:6]:
         in_img_path = in_path + filenames[file_idx]
-        result.append(in_img_path)
-
+        
         # This result only sends original image path
         # More code would need to be moved for the whole board + description - Joseph
 
-    return result
+
+        # example of sending images
+        # TODO: change this to returning style board instead. right now it's just returning similar items
+        with open(in_img_path, "rb") as image_file:
+            # encode the image so it can be send with JSON
+            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+            images.append(encoded_image)
+    
+    # TODO: get descriptions
+    descriptions = ["test"] * len(images)
+
+    return images, descriptions
