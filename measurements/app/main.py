@@ -23,7 +23,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# TODO: replace this with loading server model, images, embeddings, etc.
 load_model()
 
 server_loading_done = time.time()
@@ -42,8 +41,6 @@ async def predict(file: UploadFile = File(...), content_length: int = Header(...
     image = image.resize((224, 224))
     print("image loading finish", time.time())
     
-    # TODO: outfit recommendation, return descriptions
-    # feel free to ignore this part for now. we are probably more interested in end-to-end
     result = resnet_and_knn(image)
 
     return JSONResponse(content=result)

@@ -44,7 +44,7 @@ for outfit_id, metadata in outfit_map.items():
         item_to_outfits[item_id] = item_to_outfits.get(item_id, []) + [outfit_id]
 
 # Create nearest neighbor search for embeddings
-neighbors = NearestNeighbors(n_neighbors=6, algorithm='brute', metric='euclidean')
+neighbors = NearestNeighbors(n_neighbors=10, algorithm='brute', metric='euclidean')
 
 # Seperated Models ResNet
 ClientModel = ClientResNet()
@@ -61,46 +61,70 @@ def load_model():
 # Full prediction
 def resnet_and_knn(img):
     client_embeddings = ClientModel.predict(img, True, False)
-    server_embeddings = ServerModel.call(client_embeddings)
-    distance, indices = neighbors.kneighbors([server_embeddings])
-
-    result = []
-
-    # Loop through files
-    for file_idx in indices[0][1:6]:
-        in_img_path = in_path + filenames[file_idx]
-        result.append(in_img_path)
-
-        # This result only sends original image path
-        # More code would need to be moved for the whole board + description - Joseph
-
-    return result
+    images, descriptions = knn(client_embeddings)
+    return images, descriptions
 
 # Server only
 def knn(embedding):
+    # Finish inference
     embedding = np.array(embedding)
-    print(embedding.shape)
-    # client_embeddings = embedding.reshape((1, 28, 28, 512))
     server_embeddings = ServerModel.call(embedding)
+
+    # Get nearest neighbor and boards
     distance, indices = neighbors.kneighbors([server_embeddings])
+    board_ids, matched_ids = display_items(distance, indices)
 
-    images = []
-    descriptions = [] 
-    for file_idx in indices[0][1:6]:
-        in_img_path = in_path + filenames[file_idx]
-        
-        # This result only sends original image path
-        # More code would need to be moved for the whole board + description - Joseph
+    # Encode the information for transfer
+    descriptions, images = [], []
+    # Information to be forwarded to client
+    for i, board_id in enumerate(board_ids):
+        description, board_img = aggregate_board(board_id, matched_ids[i])
+        encoded_image = base64.b64encode(board_img.tobytes()).decode('utf-8')
 
-
-        # example of sending images
-        # TODO: change this to returning style board instead. right now it's just returning similar items
-        with open(in_img_path, "rb") as image_file:
-            # encode the image so it can be send with JSON
-            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-            images.append(encoded_image)
-    
-    # TODO: get descriptions
-    descriptions = ["test"] * len(images)
+        descriptions.append(description)
+        images.append(board_img)
 
     return images, descriptions
+
+# Helper to get boards that match item
+def get_boards(distance, indices):
+    html_string, boards, matched_ids = "", [], []
+
+    # Display similar items
+    for file_idx in indices[0]:
+        filename = filenames[file_idx]
+
+        # Get boards for associated images
+        img_path = filenames[file_idx][:-4]
+        img_board = item_to_outfits.get(img_path, [])
+        boards.extend(img_board)
+        matched_ids.extend([filename[:-4] for i in range(len(img_board))])
+
+    return boards, matched_ids
+
+# Combine board into one image and get descriptions
+def aggregate_board(board_id, matched_item_id):
+    description = ""
+    concatenated_image = np.zeros((256, 0, 3), dtype=np.uint8)
+
+    # Loop through items and collect descriptions + images
+    for item in outfit_map[board_id]['items']:
+        item_id = item["item_id"]
+
+        # Add description and semantic category
+        description += items_map[item_id]["url_name"]
+        description += " (" + items_map[item_id]['semantic_category'] + "), "
+
+        # Get the image
+        image = Image.open(images_path + item_id + ".jpg")
+
+        # Resize
+        image = np.array(image.resize((256, 256), Image.LANCZOS))
+        image_array = np.array(image)
+
+        if item_id == matched_item_id:
+            continue
+        
+        concatenated_image = np.concatenate((concatenated_image, image_array), axis=1)
+
+    return description[:-2], concatenated_image
