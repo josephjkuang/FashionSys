@@ -8,10 +8,10 @@
 
 2) Created a `utils` folder to hold models
 
-3) I uploaded the following files, but I couldn't figure out how to test the end-to-end integration, so I may need a little bit of help running it properly to see if the updates were complete. 
+3) I updated the following files, but I couldn't figure out how to test the end-to-end integration, so I may need a little bit of help running it properly to see if the updates were complete. 
     - `main.py`: Updated
     - `test_on_client.py`: Updated 
-    - `test_on_client.py`: No changes (I wasn't sure what this was)
+    - `test_on_server.py`: No changes (I wasn't sure what this was)
     - `sample_run.py`
         - Updated
         - Should we separate loading client and server models?
