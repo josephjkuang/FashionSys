@@ -7,6 +7,7 @@
 *.png
 
 item_model
+myenv
 polyvore_outfits/images
 polyvore_outfits/embeddings.npy
 polyvore_outfits/item_metadata.json

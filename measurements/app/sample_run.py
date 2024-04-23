@@ -1,4 +1,10 @@
-import pickle
+import os
+import logging
+
+# Suppress cuda errors
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+logging.getLogger('urllib3').setLevel(logging.ERROR)
+
 from sklearn.neighbors import NearestNeighbors
 # import cv2
 import matplotlib.pyplot as plt
@@ -11,13 +17,50 @@ from tensorflow.keras.layers import GlobalMaxPooling2D
 from tensorflow.keras.models import Sequential
 from numpy.linalg import norm
 import numpy as np
+import json
 
-neighbors = NearestNeighbors(n_neighbors = 6, algorithm='brute', metric='euclidean')
+from utils.ServerResNet import ServerResnet
 
-# resnet50
-model = ResNet50(weights="imagenet", include_top=False, input_shape=(224, 224, 3))
-model.trainable = False
-model = Sequential([model, GlobalMaxPooling2D()])
+# Data paths
+data_dir = "../polyvore_outfits/"
+images_path = data_dir + "images/"
+
+# Load in embeddings
+embeddings_path = data_dir + "embeddings.npy"
+embeddings = np.load(embeddings_path)
+
+# Load in filenames
+filenames_path = data_dir + "filenames.txt"
+filenames_file = open(filenames_path, 'r')
+filenames = [line.strip() for line in filenames_file.readlines()]
+
+# Error checking for embeddings + filenames
+if len(embeddings) != len(filenames):
+    print("STOP. The lengths of embeddings and filenames don't match")
+    print(len(embeddings), len(filenames))
+
+# Load in outfits metadata
+outfits_metadata_path = data_dir + "outfits_metadata.json"
+outfits_file = open(outfits_metadata_path, 'r')
+outfit_map = json.load(outfits_file)
+
+# Load in item (clothing) metadata
+item_metadata_path = data_dir + "item_metadata.json"
+items_file = open(item_metadata_path, 'r')
+items_map = json.load(items_file)
+
+# Inverted index from image to boards they are part of
+item_to_outfits = {}
+for outfit_id, metadata in outfit_map.items():
+    for item in metadata['items']:
+        item_id = item['item_id']
+        item_to_outfits[item_id] = item_to_outfits.get(item_id, []) + [outfit_id]
+
+# Create nearest neighbor search for embeddings
+neighbors = NearestNeighbors(n_neighbors=6, algorithm='brute', metric='euclidean')
+
+# Server ResNet
+server_model = ServerResnet()
 
 in_path = "/home/xinshuo3/images/"
 out_path = "/home/xinshuo3/outputs/"
@@ -25,21 +68,9 @@ out_path = "/home/xinshuo3/outputs/"
 out_list = []
 
 def load_model():
-    features_list = pickle.load(open("./embeddings.pkl", "rb"))
-    img_files_list = pickle.load(open("./filenames.pkl", "rb"))
-
-    print("finished loading pkl files")
-
-
-    for img_name in img_files_list:
-        end = img_name.split("/")[-1]
-        out_list.append(end)
-
-    print("resnet loaded")
-
-    # result_normlized = features_list[0]
-    neighbors.fit(features_list)
-    print("finished fitting model")
+    # Fit the nearest neighbors
+    neighbors.fit(embeddings)
+    print("Loaded in embeddings for nearest neighbors")
 
 def resnet_and_knn(img):
 
