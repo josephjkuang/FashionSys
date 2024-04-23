@@ -9,5 +9,7 @@ python-multipart
 requests==2.27.1
 scikit-learn==0.24.2
 tensorflow==2.7.0
+torch==2.0.0
+transformers==4.29.1
 uvicorn==0.16.0
 webcolors

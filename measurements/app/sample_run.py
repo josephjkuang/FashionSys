@@ -88,7 +88,7 @@ def knn(embedding):
 
 # Helper to get boards that match item
 def get_boards(distance, indices):
-    html_string, boards, matched_ids = "", [], []
+    boards, matched_ids = [], []
 
     # Display similar items
     for file_idx in indices[0]:
