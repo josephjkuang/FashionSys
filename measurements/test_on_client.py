@@ -47,8 +47,12 @@ if response.status_code == 200:
         with open(filename, 'wb') as image_file:
             image_file.write(image_data)
         print(f"Saved {filename} with description: {descriptions[index]}")
+
+
+    # TODO: integrate LLM inference
+
 else:
     print("Error:", response.status_code, response.text)
 
-# ----------------------- same as above ---------------------------
+# ----------------------- probably need to repeat the above code again for accuracte latency ---------------------------
 
