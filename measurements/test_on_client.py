@@ -1,19 +1,10 @@
-import os
-import logging
 import base64
-
-# Suppress cuda errors
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-logging.getLogger('urllib3').setLevel(logging.ERROR)
+import numpy as np
+import requests
+import time
 
 from transformers import AutoTokenizer, DistilBertForMultipleChoice
 from utils.ClientResNet import ClientResNet
-
-import numpy as np
-import requests
-import tensorflow as tf
-import time
-import torch
 
 # Instantiate Model
 ClientModel = ClientResNet()
@@ -25,7 +16,6 @@ prompt = "Womens Clothing to wear during Hot, sunny. Not like A fashion look fro
 # Create LLM
 tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased")
 model = DistilBertForMultipleChoice.from_pretrained("distilbert-base-cased")
-labels = labels = torch.tensor(0).unsqueeze(0) 
 print("LLM Initialized")
 
 # Read in embedding and perform inference
@@ -65,9 +55,9 @@ if response.status_code == 200:
     encoding = tokenizer(tokenizer_input, return_tensors="pt", padding=True)
 
     # Make predictions
-    outputs = model(**{k: v.unsqueeze(0) for k, v in encoding.items()}, labels=labels)  # batch size is 1
+    outputs = model(**{k: v.unsqueeze(0) for k, v in encoding.items()})  # batch size is 1
     logits = outputs.logits
-    predicted_label = torch.argmax(logits, dim=1)
+    predicted_label = np.argmax(logits, axis=1)
     logits_list = logits.tolist()
 
     # Sort the elements
