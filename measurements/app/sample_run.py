@@ -1,84 +1,130 @@
-import pickle
-from sklearn.neighbors import NearestNeighbors
-# import cv2
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-
-import tensorflow
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
-from tensorflow.keras.layers import GlobalMaxPooling2D
-from tensorflow.keras.models import Sequential
-from numpy.linalg import norm
+import json
+import logging
 import numpy as np
+import os
+import base64
 
-neighbors = NearestNeighbors(n_neighbors = 6, algorithm='brute', metric='euclidean')
+from sklearn.neighbors import NearestNeighbors
+from utils.ServerResNet import ServerResnet
+from utils.ClientResNet import ClientResNet
 
-# resnet50
-model = ResNet50(weights="imagenet", include_top=False, input_shape=(224, 224, 3))
-model.trainable = False
-model = Sequential([model, GlobalMaxPooling2D()])
+# Data paths
+data_dir = "../polyvore_outfits/"
+images_path = data_dir + "images/"
 
-in_path = "/home/xinshuo3/images/"
-out_path = "/home/xinshuo3/outputs/"
+# Load in embeddings
+embeddings_path = data_dir + "embeddings.npy"
+embeddings = np.load(embeddings_path)
 
-out_list = []
+# Load in filenames
+filenames_path = data_dir + "filenames.txt"
+filenames_file = open(filenames_path, 'r')
+filenames = [line.strip() for line in filenames_file.readlines()]
 
+# Error checking for embeddings + filenames
+if len(embeddings) != len(filenames):
+    print("STOP. The lengths of embeddings and filenames don't match")
+    print(len(embeddings), len(filenames))
+
+# Load in outfits metadata
+outfits_metadata_path = data_dir + "outfits_metadata.json"
+outfits_file = open(outfits_metadata_path, 'r')
+outfit_map = json.load(outfits_file)
+
+# Load in item (clothing) metadata
+item_metadata_path = data_dir + "item_metadata.json"
+items_file = open(item_metadata_path, 'r')
+items_map = json.load(items_file)
+
+# Inverted index from image to boards they are part of
+item_to_outfits = {}
+for outfit_id, metadata in outfit_map.items():
+    for item in metadata['items']:
+        item_id = item['item_id']
+        item_to_outfits[item_id] = item_to_outfits.get(item_id, []) + [outfit_id]
+
+# Create nearest neighbor search for embeddings
+neighbors = NearestNeighbors(n_neighbors=10, algorithm='brute', metric='euclidean')
+
+# Seperated Models ResNet
+ClientModel = ClientResNet()
+ServerModel = ServerResnet()
+
+in_path = "../polyvore_outfits/images/"
+
+# Loading in initial model for 
 def load_model():
-    features_list = pickle.load(open("./embeddings.pkl", "rb"))
-    img_files_list = pickle.load(open("./filenames.pkl", "rb"))
+    # Fit the nearest neighbors
+    neighbors.fit(embeddings)
+    print("Loaded in embeddings for nearest neighbors")
 
-    print("finished loading pkl files")
-
-
-    for img_name in img_files_list:
-        end = img_name.split("/")[-1]
-        out_list.append(end)
-
-    print("resnet loaded")
-
-    # result_normlized = features_list[0]
-    neighbors.fit(features_list)
-    print("finished fitting model")
-
+# Full prediction
 def resnet_and_knn(img):
+    client_embeddings = ClientModel.predict(img, True, False)
+    images, descriptions = knn(client_embeddings)
+    return images, descriptions
 
-    # img = image.load_img('./samples/shoes.jpg',target_size=(224,224))
-    # img_array = image.img_to_array(img)
-    img_array = np.array(img)
-    expand_img = np.expand_dims(img_array,axis=0)
-    preprocessed_img = preprocess_input(expand_img)
-    result_to_resnet = model.predict(preprocessed_img)
-    flatten_result = result_to_resnet.flatten()
-    # normalizing
-    result_normlized = flatten_result / norm(flatten_result)
-
-    print("finished processing input images")
-
-    distance, indices = neighbors.kneighbors([result_normlized])
-
-    result = []
-
-    for file in indices[0][1:6]:
-        # print(out_list[file])
-        out_img_path = out_path + out_list[file]
-        in_img_path = in_path + out_list[file]
-        result.append(in_img_path)
-        # print(in_img_path)
-        # img = mpimg.imread(in_img_path)
-        # plt.imshow(img)  # Plot the image
-        # plt.savefig(out_img_path)  # Save the image to out_img_path
-        # plt.close() 
-
-    return result
-
-
+# Server only
 def knn(embedding):
-    distance, indices = neighbors.kneighbors([embedding])
+    # Finish inference
+    embedding = np.array(embedding)
+    server_embeddings = ServerModel.call(embedding)
 
-    result = []
-    for file in indices[0][1:6]:  # Assuming you want to skip the first result as it's likely the input image
-        out_img_path = out_path + out_list[file]
-        in_img_path = in_path + out_list[file]
-        result.append(in_img_path)
-    return result
+    # Get nearest neighbor and boards
+    distance, indices = neighbors.kneighbors([server_embeddings])
+    board_ids, matched_ids = display_items(distance, indices)
+
+    # Encode the information for transfer
+    descriptions, images = [], []
+    # Information to be forwarded to client
+    for i, board_id in enumerate(board_ids):
+        description, board_img = aggregate_board(board_id, matched_ids[i])
+        encoded_image = base64.b64encode(board_img.tobytes()).decode('utf-8')
+
+        descriptions.append(description)
+        images.append(board_img)
+
+    return images, descriptions
+
+# Helper to get boards that match item
+def get_boards(distance, indices):
+    boards, matched_ids = [], []
+
+    # Display similar items
+    for file_idx in indices[0]:
+        filename = filenames[file_idx]
+
+        # Get boards for associated images
+        img_path = filenames[file_idx][:-4]
+        img_board = item_to_outfits.get(img_path, [])
+        boards.extend(img_board)
+        matched_ids.extend([filename[:-4] for i in range(len(img_board))])
+
+    return boards, matched_ids
+
+# Combine board into one image and get descriptions
+def aggregate_board(board_id, matched_item_id):
+    description = ""
+    concatenated_image = np.zeros((256, 0, 3), dtype=np.uint8)
+
+    # Loop through items and collect descriptions + images
+    for item in outfit_map[board_id]['items']:
+        item_id = item["item_id"]
+
+        # Add description and semantic category
+        description += items_map[item_id]["url_name"]
+        description += " (" + items_map[item_id]['semantic_category'] + "), "
+
+        # Get the image
+        image = Image.open(images_path + item_id + ".jpg")
+
+        # Resize
+        image = np.array(image.resize((256, 256), Image.LANCZOS))
+        image_array = np.array(image)
+
+        if item_id == matched_item_id:
+            continue
+        
+        concatenated_image = np.concatenate((concatenated_image, image_array), axis=1)
+
+    return description[:-2], concatenated_image
