@@ -3,8 +3,10 @@ import numpy as np
 import requests
 import time
 
-from transformers import AutoTokenizer, DistilBertForMultipleChoice
+from transformers import AutoTokenizer, TFDistilBertForMultipleChoice
 from utils.ClientResNet import ClientResNet
+import tensorflow as tf
+
 
 # Instantiate Model
 ClientModel = ClientResNet()
@@ -15,7 +17,7 @@ prompt = "Womens Clothing to wear during Hot, sunny. Not like A fashion look fro
 
 # Create LLM
 tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased")
-model = DistilBertForMultipleChoice.from_pretrained("distilbert-base-cased")
+model = TFDistilBertForMultipleChoice.from_pretrained("distilbert-base-cased")
 print("LLM Initialized")
 
 # Read in embedding and perform inference
@@ -52,13 +54,13 @@ if response.status_code == 200:
     tokenizer_input = []
     for description in descriptions:
         tokenizer_input.append([prompt, description])
-    encoding = tokenizer(tokenizer_input, return_tensors="pt", padding=True)
+    encoding = tokenizer(tokenizer_input, return_tensors="tf", padding=True)
 
     # Make predictions
-    outputs = model(**{k: v.unsqueeze(0) for k, v in encoding.items()})  # batch size is 1
+    outputs = model(**{k: tf.expand_dims(v, axis=0) for k, v in encoding.items()}) # batch size is 1
     logits = outputs.logits
     predicted_label = np.argmax(logits, axis=1)
-    logits_list = logits.tolist()
+    logits_list = logits.numpy().tolist()
 
     # Sort the elements
     paired_list = list(zip(descriptions, logits_list[0]))
