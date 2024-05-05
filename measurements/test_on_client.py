@@ -106,6 +106,8 @@ if response.status_code == 200:
     descriptions = json_response['descriptions']
     encoded_images = json_response['images']
 
+    llm_start = time.time()
+
     # Decode the images
     images = []
     for index, base64_image in enumerate(encoded_images):
@@ -128,6 +130,8 @@ if response.status_code == 200:
     paired_list = list(zip(descriptions, logits_list[0]))
     sorted_pairs = sorted(enumerate(paired_list), key=lambda x: x[1][1], reverse=True)
 
+    print(f"Time taken for LLM recommendation:  {time.time() - llm_start}")
+
     # Save the images and print descriptions
     for idx, pair in enumerate(sorted_pairs):
         old_idx, description = pair[0], pair[1][0]
@@ -137,6 +141,8 @@ if response.status_code == 200:
         with open(filename, 'wb') as image_file:
             image_file.write(images[old_idx])
         print(f"Saved {filename} with description: {descriptions[idx]}")
+    
+
 
 else:
     print("Error:", response.status_code, response.text)
