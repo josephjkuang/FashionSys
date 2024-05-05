@@ -3,6 +3,9 @@ import logging
 import numpy as np
 import os
 import base64
+import time
+from PIL import Image
+from io import BytesIO
 
 from sklearn.neighbors import NearestNeighbors
 from utils.ServerResNet import ServerResnet
@@ -78,11 +81,11 @@ def knn(embedding):
     descriptions, images = [], []
     # Information to be forwarded to client
     for i, board_id in enumerate(board_ids):
-        description, board_img = aggregate_board(board_id, matched_ids[i])
-        encoded_image = base64.b64encode(board_img.tobytes()).decode('utf-8')
+        description, buffer = aggregate_board(board_id, matched_ids[i])
+        encoded_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
         descriptions.append(description)
-        images.append(board_img)
+        images.append(encoded_image)
 
     return images, descriptions
 
@@ -127,4 +130,32 @@ def aggregate_board(board_id, matched_item_id):
         
         concatenated_image = np.concatenate((concatenated_image, image_array), axis=1)
 
-    return description[:-2], concatenated_image
+
+    # Convert NumPy array to a Pillow Image
+    img = Image.fromarray(concatenated_image)
+
+    # Save the image to a buffer
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")  # You can use different formats as needed
+    buffer.seek(0)
+
+    return description[:-2], buffer
+
+def display_items(distance, indices):
+    # html_string, boards, matched_ids = "", [], []
+    boards, matched_ids = [], []
+
+    # Display similar items
+    for file_idx in indices[0]:
+        # Load in images
+        filename = filenames[file_idx]
+        # img_tag = f"<img src='{images_path + filename}' style='width:{100}px;height:{100}px;margin:0;padding:0;'>"
+        # html_string += img_tag
+
+        # Get boards for associated images
+        img_path = filenames[file_idx][:-4]
+        img_board = item_to_outfits.get(img_path, [])
+        boards.extend(img_board)
+        matched_ids.extend([filename[:-4] for i in range(len(img_board))])
+
+    return boards, matched_ids
