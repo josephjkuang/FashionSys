@@ -4,7 +4,7 @@ import time
 start_time = time.time() 
 
 # URL of the API endpoint
-url = "http://172.22.151.173:8000/full_prediction/"
+url = "http://3.15.239.14:8000/full_prediction/"
 
 # Path to the file to be uploaded
 file_path = "/home/xinshuo3/FashionSys/measurements/samples/shoes.jpg"
@@ -27,6 +27,5 @@ if response.status_code == 200:
     end_time = time.time() 
     duration = end_time - start_time 
     print(f"Time taken for calling api: {duration} seconds")
-    print("Success:", response.json())
 else:
     print("Error:", response.status_code, response.text)
